@@ -1,30 +1,31 @@
-const Sequelize = require('sequelize')
-const sequelize = new Sequelize('sqlite::memory:')
+const db = require("./db");
 
-const criarBanco = (async() => {
-    const Postagem = sequelize.define('postagens', {
-        titulo: Sequelize.STRING,
-        conteudo: Sequelize.TEXT
-    })
-    
-    const Usuario = sequelize.define('usuarios', {
-        nome: Sequelize.STRING,
-        sobrenome: Sequelize.STRING,
-        idade: Sequelize.INTEGER,
-        email: Sequelize.STRING
-    })
-    
-    await sequelize.sync()
-    
-    await Postagem.create({
-        titulo: 'Um Título Qualquer',
-        conteudo: 'Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...'
-    })
+(async() => {
+    console.log("==== APPLYING MIGRATIONS ====")
+    await db.migrate()
 
-    await Usuario.create({
-        nome: "John",
-        sobrenome: "Doe",
-        idade: 32,
-        email: "john.doe@hacker.com"
+    console.log("==== DOING SOME OPERATIONS USING REPOSITORY ====")
+
+    // Create
+    var post = await db.models.Post.create({
+        title: "My new post",
+        content: "Just the content of the post",
+        authorId: 1
     })
+    console.log(post.toJSON())
+
+    // Update
+    post.title = "Title Updated"
+    await post.save()
+
+    // Find By Id
+    post = await db.models.Post.findByPk(post.id)
+    console.log(post.toJSON())
+
+    // Delete
+    await post.destroy()
+    
+    // Get All
+    posts = await db.models.Post.findAll()
+    console.log(JSON.stringify(posts, null, 2))
 })()
